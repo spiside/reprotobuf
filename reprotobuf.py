@@ -13,6 +13,9 @@ import executor
 import descriptors
 
 
+# Custom exception class.
+class ReprotobufException(Exception): pass  # noqa
+
 # XXX must be library for this
 def has_field_name(s):
     """
@@ -22,6 +25,7 @@ def has_field_name(s):
 
 
 class Reprotobuf(object):
+
     def __init__(self, classes_dex):
         self.dvm = dvm.DalvikVMFormat(classes_dex)
         self.vma = uVMAnalysis(self.dvm)
@@ -59,6 +63,11 @@ class Reprotobuf(object):
             self.add_class(name, fields)
 
     def structure_packages(self):
+        if not self.tree.get('sub'):
+            # If we cannot retrieve packages from APK, raise helpful
+            # message.
+            raise ReprotobufException('Could not get packages from APK')
+
         for name in self.tree['sub']:
             # extract package and outer name
             parts = name.split('/')
